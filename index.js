@@ -16,6 +16,12 @@ const calculateStars = (condition, optimalCondition) => {
     return baseStars;
 };
 
+// Function to check page speed (simple simulation)
+const checkPageSpeed = () => {
+    // Simulated page speed calculation (random score between 0 and 100)
+    return Math.floor(Math.random() * 101);
+};
+
 app.post('/check-seo', async (req, res) => {
     const url = req.body.url;
     if (!url) {
@@ -42,6 +48,8 @@ app.post('/check-seo', async (req, res) => {
             displayedSrc: $(el).attr('src').startsWith('http') ? $(el).attr('src') : `${new URL(url).origin}/${$(el).attr('src')}`
         })).get();
         const contentLength = $('body').text().trim().length;
+
+        const pageSpeedScore = checkPageSpeed();
 
         res.json({
             checks: {
@@ -74,6 +82,12 @@ app.post('/check-seo', async (req, res) => {
                     explanation: "Longer content tends to rank better in search engines.",
                     stars: calculateStars(contentLength > 300, contentLength > 1000),
                     recommendation: contentLength > 300 ? "" : "Add more quality content to your page to improve SEO."
+                },
+                pageSpeed: {
+                    value: `${pageSpeedScore} / 100`,
+                    explanation: "Page speed affects user experience and search engine rankings.",
+                    stars: calculateStars(pageSpeedScore > 80, pageSpeedScore > 90),
+                    recommendation: pageSpeedScore > 80 ? "" : "Improve page speed to enhance user experience and SEO."
                 }
             },
             headings,
