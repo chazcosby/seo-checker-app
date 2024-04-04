@@ -53,7 +53,7 @@ const commonWords = [
     'want', 'wants', 'wasnt', 'way', 'wed', 'welcome', 'well', 'went', 'werent', 'whatever', 'whatll', 'whats', 'whence', 
     'whenever', 'whereafter', 'whereas', 'whereby', 'wherein', 'wheres', 'whereupon', 'wherever', 'whether', 'whichever', 
     'while', 'whilst', 'whim', 'whither', 'whod', 'whoever', 'whole', 'whom', 'whose', 'widely', 'willing', 'wish', 
-    'within', 'wont', 'words', 'social', 'google', 'are', 'to', 'png', 'jpg', 'logo', 'images', 'world', 'wouldnt', 'my', 'for', 'www', 'x', 'y', 'yes', 'yet', 'youd', 'youre', 'youve', 'can', 'with', 'z', 'your', 'our', 'youre', 'we', 'is', 'how', 'you', 'do', 'what', 'a','zero' 
+    'within', 'wont', 'object', 'words', 'social', 'google', 'are', 'to', 'png', 'jpg', 'logo', 'images', 'world', 'wouldnt', 'my', 'for', 'www', 'x', 'y', 'yes', 'yet', 'youd', 'youre', 'youve', 'can', 'with', 'z', 'your', 'our', 'youre', 'we', 'is', 'how', 'you', 'do', 'what', 'a','zero' 
 ];
 
 // Helper function to calculate star rating based on optimization level and importance
@@ -187,7 +187,10 @@ app.post('/check-seo', async (req, res) => {
             const tagOrder = { 'h1': 1, 'h2': 2, 'h3': 3, 'h4': 4, 'h5': 5, 'h6': 6 };
             return tagOrder[a.tag] - tagOrder[b.tag];
         });
-        const imagesWithoutAlt = $('img:not([alt])').map((i, el) => $(el).attr('src')).get().filter(image => image); // Get alt text for images
+        const imagesWithoutAlt = $('img:not([alt])').map((i, el) => ({
+            src: $(el).attr('src'),
+            alt: $(el).attr('alt') || 'Missing Alt Text'
+        })).get(); // Get alt text for images
         const content = $('body').text().trim();
         const contentLength = content.length;
 

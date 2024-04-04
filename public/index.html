@@ -57,8 +57,8 @@
                 }
                 if (data.imagesWithoutAlt.length) {
                     output += '<h3>Images Missing Alt Text:</h3>';
-                    data.imagesWithoutAlt.forEach((src, index) => {
-                        output += `<div><p>Image ${index + 1}: Missing Alt Text - <img src="${src}" alt="Missing Alt Text"></p></div>`;
+                    data.imagesWithoutAlt.forEach((image, index) => {
+                        output += `<div><p>Image ${index + 1}: Missing Alt Text - <a href="${image.src}">${image.src}</a><br><img src="${image.src}" alt="${image.alt}"></p></div>`;
                     });
                 }
                 results.innerHTML = output;
