@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Checker App</title>
+</head>
+<body>
+    <h1>SEO Checker</h1>
+    <form id="seoForm">
+        <input type="text" id="urlInput" placeholder="Enter a URL" required>
+        <button type="submit">Check SEO</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('seoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            fetch('http://localhost:3000/check-seo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `
+                    <p>Title: ${data.title || 'Not found'}</p>
+                    <p>Meta Description: ${data.metaDescription || 'Not found'}</p>
+                    <p>HTTPS: ${data.isHttps ? 'Yes' : 'No'}</p>
+                `;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
