@@ -80,22 +80,57 @@ const calculateStars = (condition, optimalCondition, importance) => {
     return Math.min(Math.max(baseStars, 1), 5);
 };
 
-// Function to check page speed (simple simulation)
-const checkPageSpeed = () => {
-    // Simulated page speed calculation (random score between 0 and 100)
-    return Math.floor(Math.random() * 101);
-};
-
 // Function to assess content quality
 const assessContentQuality = (content) => {
     // Simulated content quality assessment
     // This can be replaced with more sophisticated algorithms
-    const qualityScore = Math.random() * 100;
+    const readabilityScore = calculateReadability(content);
+    const grammarScore = calculateGrammar(content);
+    const relevanceScore = calculateRelevance(content);
+    const uniquenessScore = calculateUniqueness(content);
+
+    // Calculate overall quality score
+    const qualityScore = (readabilityScore + grammarScore + relevanceScore + uniquenessScore) / 4;
+
     let recommendation = '';
     if (qualityScore < 50) {
         recommendation = "Improve content quality by creating original, engaging, and relevant content.";
     }
     return { qualityScore, recommendation };
+};
+
+// Function to calculate readability score
+const calculateReadability = (content) => {
+    // Simulated calculation of readability score
+    // This can be replaced with an actual readability analysis algorithm
+    return 70; // Example score
+};
+
+// Function to calculate grammar score
+const calculateGrammar = (content) => {
+    // Simulated calculation of grammar score
+    // This can be replaced with an actual grammar analysis algorithm
+    return 80; // Example score
+};
+
+// Function to calculate relevance score
+const calculateRelevance = (content) => {
+    // Simulated calculation of relevance score
+    // This can be replaced with an actual relevance analysis algorithm
+    return 90; // Example score
+};
+
+// Function to calculate uniqueness score
+const calculateUniqueness = (content) => {
+    // Simulated calculation of uniqueness score
+    // This can be replaced with an actual uniqueness analysis algorithm
+    return 85; // Example score
+};
+
+// Function to check page speed (simple simulation)
+const checkPageSpeed = () => {
+    // Simulated page speed calculation (random score between 0 and 100)
+    return Math.floor(Math.random() * 101);
 };
 
 // Function to perform keyword analysis
