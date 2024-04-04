@@ -50,8 +50,8 @@
                 }
                 if (data.imagesWithoutAlt.length) {
                     output += '<h3>Images Missing Alt Text:</h3>';
-                    data.imagesWithoutAlt.forEach(img => {
-                        output += `<div><img src="${img.displayedSrc}" alt="Missing alt" style="max-width:100px; max-height:100px;"><p>Src: ${img.src}</p></div>`;
+                    data.imagesWithoutAlt.forEach((src, index) => {
+                        output += `<div><p>Image ${index + 1}: Missing Alt Text - ${src}</p></div>`;
                     });
                 }
                 results.innerHTML = output;
