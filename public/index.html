@@ -14,6 +14,14 @@
     <div id="results"></div>
 
     <script>
+        // Function to generate star rating HTML based on a given rating
+        const generateStarRating = (rating) => {
+            const totalStars = 5;
+            const filledStars = Math.round(rating);
+            const emptyStars = totalStars - filledStars;
+            return '★'.repeat(filledStars) + '☆'.repeat(emptyStars);
+        };
+
         document.getElementById('seoForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const url = document.getElementById('urlInput').value;
@@ -26,7 +34,6 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data.headings); // Log headings data
                 const results = document.getElementById('results');
                 let output = '<h2>SEO Analysis Results</h2>';
                 Object.keys(data.checks).forEach(key => {
@@ -34,7 +41,7 @@
                     output += `<div>
                                 <h3>${key.charAt(0).toUpperCase() + key.slice(1)}</h3>
                                 <p>${check.explanation}</p>
-                                <p>Rating: ${'★'.repeat(check.stars)}${'☆'.repeat(5 - check.stars)}</p>
+                                <p>Rating: ${generateStarRating(check.stars)}</p>
                                 <p>${check.value ? `Current: ${check.value}` : ''}</p>
                                 ${check.recommendation ? `<p>Recommendation: ${check.recommendation}</p>` : ''}
                                </div>`;
@@ -51,7 +58,7 @@
                 if (data.imagesWithoutAlt.length) {
                     output += '<h3>Images Missing Alt Text:</h3>';
                     data.imagesWithoutAlt.forEach((src, index) => {
-                        output += `<div><p>Image ${index + 1}: Missing Alt Text - ${src}</p></div>`;
+                        output += `<div><p>Image ${index + 1}: Missing Alt Text - <img src="${src}" alt="Missing Alt Text"></p></div>`;
                     });
                 }
                 results.innerHTML = output;
