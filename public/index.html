@@ -26,6 +26,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log(data.headings); // Log headings data
                 const results = document.getElementById('results');
                 let output = '<h2>SEO Analysis Results</h2>';
                 Object.keys(data.checks).forEach(key => {
@@ -38,11 +39,15 @@
                                 ${check.recommendation ? `<p>Recommendation: ${check.recommendation}</p>` : ''}
                                </div>`;
                 });
-                output += '<h3>Headings Found:</h3><ul>';
-                data.headings.forEach(heading => {
-                    output += `<li>${heading.tag.toUpperCase()}: ${heading.text}</li>`;
-                });
-                output += '</ul>';
+                if (Array.isArray(data.headings)) { // Check if headings is an array
+                    output += '<h3>Headings Found:</h3><ul>';
+                    data.headings.forEach(heading => {
+                        output += `<li>${heading.tag.toUpperCase()}: ${heading.text}</li>`;
+                    });
+                    output += '</ul>';
+                } else {
+                    output += '<p>No headings found.</p>';
+                }
                 if (data.imagesWithoutAlt.length) {
                     output += '<h3>Images Missing Alt Text:</h3>';
                     data.imagesWithoutAlt.forEach(img => {

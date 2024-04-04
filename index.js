@@ -30,7 +30,13 @@ app.post('/check-seo', async (req, res) => {
         const metaDescription = $('meta[name="description"]').attr('content');
         const isHttps = url.startsWith('https://');
         const viewport = $('meta[name="viewport"]').attr('content') ? true : false;
-        const headings = $(':header').map((i, el) => ({ tag: el.tagName, text: $(el).text() })).get();
+        const headings = $(':header').map((i, el) => ({
+            tag: el.tagName.toLowerCase(),
+            text: $(el).text()
+        })).get().sort((a, b) => {
+            const tagOrder = { 'h1': 1, 'h2': 2, 'h3': 3, 'h4': 4, 'h5': 5, 'h6': 6 };
+            return tagOrder[a.tag] - tagOrder[b.tag];
+        });
         const imagesWithoutAlt = $('img:not([alt])').map((i, el) => ({
             src: $(el).attr('src'),
             displayedSrc: $(el).attr('src').startsWith('http') ? $(el).attr('src') : `${new URL(url).origin}/${$(el).attr('src')}`
