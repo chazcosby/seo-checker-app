@@ -27,23 +27,33 @@
             .then(response => response.json())
             .then(data => {
                 const results = document.getElementById('results');
-                results.innerHTML = `
-                    <p>Title: ${data.title || 'Not found'}</p>
-                    <p>Meta Description: ${data.metaDescription || 'Not found'}</p>
-                    <p>HTTPS: ${data.isHttps ? 'Yes' : 'No'}</p>
-                    <p>Mobile Friendly: ${data.viewport ? 'Yes' : 'No'}</p>
-                    <p>Headings (H1, H2): ${data.headings.h1}, ${data.headings.h2}</p>
-                    <p>Content Length: ${data.contentLength}</p>
-                    <p>Robots.txt: ${data.robots ? 'Found' : 'Not found'}</p>
-                    <p>Images with Alt Text: ${data.imagesWithAlt}</p>
-                    <p>Page Speed (Load Time): ${data.pageSpeed}</p>
-                    <p>Clean URL: ${data.cleanURL ? 'Yes' : 'No'}</p>
-                    <p>Favicon: ${data.favicon ? 'Found' : 'Not found'}</p>
-                    <p>Canonical Tag: ${data.canonical ? 'Found' : 'Not found'}</p>
-                `;
+                let output = '<h2>SEO Analysis Results</h2>';
+                Object.keys(data.checks).forEach(key => {
+                    const check = data.checks[key];
+                    output += `<div>
+                                <h3>${key.charAt(0).toUpperCase() + key.slice(1)}</h3>
+                                <p>${check.explanation}</p>
+                                <p>Rating: ${'★'.repeat(check.stars)}${'☆'.repeat(5 - check.stars)}</p>
+                                <p>${check.value ? `Current: ${check.value}` : ''}</p>
+                                ${check.recommendation ? `<p>Recommendation: ${check.recommendation}</p>` : ''}
+                               </div>`;
+                });
+                output += '<h3>Headings Found:</h3><ul>';
+                data.headings.forEach(heading => {
+                    output += `<li>${heading.tag.toUpperCase()}: ${heading.text}</li>`;
+                });
+                output += '</ul>';
+                if (data.imagesWithoutAlt.length) {
+                    output += '<h3>Images Missing Alt Text:</h3>';
+                    data.imagesWithoutAlt.forEach(img => {
+                        output += `<div><img src="${img.displayedSrc}" alt="Missing alt" style="max-width:100px; max-height:100px;"><p>Src: ${img.src}</p></div>`;
+                    });
+                }
+                results.innerHTML = output;
             })
             .catch(error => {
                 console.error('Error:', error);
+                results.innerHTML = '<p>Error fetching SEO data. Please try again.</p>';
             });
         });
     </script>

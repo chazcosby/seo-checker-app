@@ -3,13 +3,18 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const cors = require('cors');
 
-
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-
 const PORT = process.env.PORT || 3000;
+
+// Helper function to calculate star rating based on optimization level and importance
+const calculateStars = (condition, optimalCondition) => {
+    let baseStars = condition ? 3 : 1; // Basic optimization check
+    if (optimalCondition) baseStars = 5; // Optimal condition met
+    return baseStars;
+};
 
 app.post('/check-seo', async (req, res) => {
     const url = req.body.url;
@@ -18,36 +23,55 @@ app.post('/check-seo', async (req, res) => {
     }
 
     try {
-        const startTime = Date.now();
         const response = await axios.get(url);
-        const loadTime = Date.now() - startTime;
-
         const $ = cheerio.load(response.data);
+
         const title = $('title').first().text();
         const metaDescription = $('meta[name="description"]').attr('content');
         const isHttps = url.startsWith('https://');
         const viewport = $('meta[name="viewport"]').attr('content') ? true : false;
-        const headings = { h1: $('h1').length, h2: $('h2').length };
-        const contentLength = $('body').text().length;
-        const robots = await axios.get(`${new URL(url).origin}/robots.txt`).then(() => true).catch(() => false);
-        const imagesWithAlt = $('img[alt]').length;
-        const cleanURL = !url.includes("?") && !url.includes("#") && !url.includes("&");
-        const favicon = $('link[rel="shortcut icon"], link[rel="icon"]').length > 0;
-        const canonical = $('link[rel="canonical"]').length > 0;
+        const headings = $(':header').map((i, el) => ({ tag: el.tagName, text: $(el).text() })).get();
+        const imagesWithoutAlt = $('img:not([alt])').map((i, el) => ({
+            src: $(el).attr('src'),
+            displayedSrc: $(el).attr('src').startsWith('http') ? $(el).attr('src') : `${new URL(url).origin}/${$(el).attr('src')}`
+        })).get();
+        const contentLength = $('body').text().trim().length;
 
         res.json({
-            title,
-            metaDescription,
-            isHttps,
-            viewport,
+            checks: {
+                title: {
+                    value: title,
+                    explanation: "The title tag is crucial for SEO and should accurately reflect the page content.",
+                    stars: calculateStars(title.length > 0, title.length > 10 && title.length < 60),
+                    recommendation: title.length > 0 ? "" : "Add a meaningful title tag to better describe your page."
+                },
+                metaDescription: {
+                    value: metaDescription,
+                    explanation: "Meta descriptions provide a summary of your page's content.",
+                    stars: calculateStars(!!metaDescription, metaDescription && metaDescription.length > 50 && metaDescription.length < 160),
+                    recommendation: metaDescription ? "" : "Add a meta description to summarize your page's content."
+                },
+                isHttps: {
+                    value: isHttps ? "Yes" : "No",
+                    explanation: "Using HTTPS secures your website and improves its ranking.",
+                    stars: calculateStars(isHttps, isHttps),
+                    recommendation: isHttps ? "" : "Consider switching to HTTPS to secure your site and improve SEO."
+                },
+                viewport: {
+                    value: viewport ? "Present" : "Not present",
+                    explanation: "A viewport meta tag helps with proper rendering on mobile devices.",
+                    stars: calculateStars(viewport, viewport),
+                    recommendation: viewport ? "" : "Define a viewport tag to ensure your site is displayed correctly on all devices."
+                },
+                contentLength: {
+                    value: `${contentLength} characters`,
+                    explanation: "Longer content tends to rank better in search engines.",
+                    stars: calculateStars(contentLength > 300, contentLength > 1000),
+                    recommendation: contentLength > 300 ? "" : "Add more quality content to your page to improve SEO."
+                }
+            },
             headings,
-            contentLength,
-            robots,
-            imagesWithAlt,
-            pageSpeed: `${loadTime} ms`,
-            cleanURL,
-            favicon,
-            canonical
+            imagesWithoutAlt
         });
     } catch (error) {
         console.error(error);
