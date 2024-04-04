@@ -10,10 +10,27 @@ app.use(cors());
 const PORT = process.env.PORT || 3000;
 
 // Helper function to calculate star rating based on optimization level and importance
-const calculateStars = (condition, optimalCondition) => {
+const calculateStars = (condition, optimalCondition, importance) => {
     let baseStars = condition ? 3 : 1; // Basic optimization check
     if (optimalCondition) baseStars = 5; // Optimal condition met
-    return baseStars;
+
+    // Adjust stars based on importance
+    switch(importance) {
+        case 'critical':
+            baseStars += 1; // Additional star for critical elements
+            break;
+        case 'high':
+            baseStars += 0.5; // Additional half star for high importance
+            break;
+        case 'low':
+            baseStars -= 0.5; // Reduce half star for low importance
+            break;
+        default:
+            break;
+    }
+
+    // Ensure stars are within the range of 1 to 5
+    return Math.min(Math.max(baseStars, 1), 5);
 };
 
 // Function to check page speed (simple simulation)
@@ -56,37 +73,37 @@ app.post('/check-seo', async (req, res) => {
                 title: {
                     value: title,
                     explanation: "The title tag is crucial for SEO and should accurately reflect the page content.",
-                    stars: calculateStars(title.length > 0, title.length > 10 && title.length < 60),
+                    stars: calculateStars(title.length > 0, title.length > 10 && title.length < 60, 'high'),
                     recommendation: title.length > 0 ? "" : "Add a meaningful title tag to better describe your page."
                 },
                 metaDescription: {
                     value: metaDescription,
                     explanation: "Meta descriptions provide a summary of your page's content.",
-                    stars: calculateStars(!!metaDescription, metaDescription && metaDescription.length > 50 && metaDescription.length < 160),
+                    stars: calculateStars(!!metaDescription, metaDescription && metaDescription.length > 50 && metaDescription.length < 160, 'high'),
                     recommendation: metaDescription ? "" : "Add a meta description to summarize your page's content."
                 },
                 isHttps: {
                     value: isHttps ? "Yes" : "No",
                     explanation: "Using HTTPS secures your website and improves its ranking.",
-                    stars: calculateStars(isHttps, isHttps),
+                    stars: calculateStars(isHttps, isHttps, 'critical'),
                     recommendation: isHttps ? "" : "Consider switching to HTTPS to secure your site and improve SEO."
                 },
                 viewport: {
                     value: viewport ? "Present" : "Not present",
                     explanation: "A viewport meta tag helps with proper rendering on mobile devices.",
-                    stars: calculateStars(viewport, viewport),
+                    stars: calculateStars(viewport, viewport, 'high'),
                     recommendation: viewport ? "" : "Define a viewport tag to ensure your site is displayed correctly on all devices."
                 },
                 contentLength: {
                     value: `${contentLength} characters`,
                     explanation: "Longer content tends to rank better in search engines.",
-                    stars: calculateStars(contentLength > 300, contentLength > 1000),
+                    stars: calculateStars(contentLength > 300, contentLength > 1000, 'high'),
                     recommendation: contentLength > 300 ? "" : "Add more quality content to your page to improve SEO."
                 },
                 pageSpeed: {
                     value: `${pageSpeedScore} / 100`,
                     explanation: "Page speed affects user experience and search engine rankings.",
-                    stars: calculateStars(pageSpeedScore > 80, pageSpeedScore > 90),
+                    stars: calculateStars(pageSpeedScore > 80, pageSpeedScore > 90, 'high'),
                     recommendation: pageSpeedScore > 80 ? "" : "Improve page speed to enhance user experience and SEO."
                 }
             },
