@@ -176,6 +176,31 @@ app.post('/check-seo', async (req, res) => {
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
 
+        // Initialize an array to hold text content from specific elements
+        let relevantTexts = [];
+
+        // Accumulate text from headings
+        $('h1, h2, h3, h4, h5, h6').each(function() {
+            relevantTexts.push($(this).text().trim());
+        });
+
+        // Accumulate text from paragraph tags
+        $('p').each(function() {
+            relevantTexts.push($(this).text().trim());
+        });
+
+        // Consider alt text from images as part of the content
+        $('img').each(function() {
+            const altText = $(this).attr('alt');
+            if (altText) {
+                relevantTexts.push(altText.trim());
+            }
+        });
+
+        // Combine all relevant texts into a single string, then normalize whitespace
+        const combinedContent = relevantTexts.join(' ').replace(/\s+/g, ' ').trim();
+        const contentLength = combinedContent.length;
+
         const title = $('title').first().text();
         const metaDescription = $('meta[name="description"]').attr('content');
         const isHttps = url.startsWith('https://');
@@ -190,13 +215,11 @@ app.post('/check-seo', async (req, res) => {
         const imagesWithoutAlt = $('img:not([alt])').map((i, el) => ({
             src: $(el).attr('src'),
             alt: $(el).attr('alt') || 'Missing Alt Text'
-        })).get(); // Get alt text for images
-        const content = $('body').text().trim();
-        const contentLength = content.length;
-
+        })).get();
+        
         const pageSpeedScore = checkPageSpeed();
-        const { qualityScore: contentQualityScore, recommendation: contentQualityRecommendation } = assessContentQuality(content);
-        const { keywords, recommendation: keywordRecommendation } = analyzeKeywords(content, headings, metaDescription, imagesWithoutAlt);
+        const { qualityScore: contentQualityScore, recommendation: contentQualityRecommendation } = assessContentQuality(combinedContent);
+        const { keywords, recommendation: keywordRecommendation } = analyzeKeywords(combinedContent, headings, metaDescription, imagesWithoutAlt.map(image => image.alt));
 
         res.json({
             checks: {
@@ -226,7 +249,7 @@ app.post('/check-seo', async (req, res) => {
                 },
                 contentLength: {
                     value: `${contentLength} characters`,
-                    explanation: "Longer content tends to rank better in search engines.",
+                    explanation: "Content length is calculated from headings, paragraphs, and image alt texts, indicating the amount of meaningful text.",
                     stars: calculateStars(contentLength > 300, contentLength > 1000, 'high'),
                     recommendation: contentLength > 300 ? "" : "Add more quality content to your page to improve SEO."
                 },
@@ -257,5 +280,6 @@ app.post('/check-seo', async (req, res) => {
         res.status(500).send({ error: 'Error fetching the URL' });
     }
 });
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
