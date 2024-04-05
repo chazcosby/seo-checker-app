@@ -128,9 +128,22 @@ const calculateUniqueness = (content) => {
 };
 
 // Function to check page speed (simple simulation)
-const checkPageSpeed = () => {
-    // Simulated page speed calculation (random score between 0 and 100)
-    return Math.floor(Math.random() * 101);
+const checkPageSpeed = async (url) => {
+    try {
+        const start = Date.now(); // Start timer
+        await axios.get(url); // Fetch the URL
+        const end = Date.now(); // End timer
+        const duration = end - start; // Calculate duration
+
+        // Convert duration to a speed score out of 100 (Example: shorter duration = higher score)
+        // Note: You'll need to adjust the logic based on observed durations to fit into a 0-100 scale appropriately
+        let speedScore = 100 - duration / 10; // Example calculation
+        speedScore = Math.max(0, speedScore); // Ensure score is not below 0
+        return speedScore.toFixed(0); // Return as integer score
+    } catch (error) {
+        console.error('Error measuring page speed:', error);
+        return 0; // Return 0 if there's an error fetching the URL
+    }
 };
 
 // Function to perform keyword analysis
@@ -217,7 +230,9 @@ app.post('/check-seo', async (req, res) => {
             alt: $(el).attr('alt') || 'Missing Alt Text'
         })).get();
         
-        const pageSpeedScore = checkPageSpeed();
+        // Call the modified checkPageSpeed function with the URL
+        const pageSpeedScore = await checkPageSpeed(url);
+
         const { qualityScore: contentQualityScore, recommendation: contentQualityRecommendation } = assessContentQuality(combinedContent);
         const { keywords, recommendation: keywordRecommendation } = analyzeKeywords(combinedContent, headings, metaDescription, imagesWithoutAlt.map(image => image.alt));
 
@@ -280,6 +295,7 @@ app.post('/check-seo', async (req, res) => {
         res.status(500).send({ error: 'Error fetching the URL' });
     }
 });
+
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
